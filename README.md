@@ -1,3 +1,11 @@
+Branched from Master project This adds the Display of the tempature from a Set City on Indicator 3 
+Please Add your open weather map API to pirsclockfull.py
+
+you can also change your City in this file
+
+
+
+
 PiRSClock-Full
 ==============
 
