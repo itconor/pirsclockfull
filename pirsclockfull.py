@@ -1,8 +1,17 @@
 #! /usr/bin/env python
-import pygame , sys , math, time, os
+import pygame , sys , math, time, os, pyowm
 import RPi.GPIO as GPIO
 from pygame.locals import *
 os.environ['SDL_VIDEODRIVER']="fbcon"
+
+
+owm = pyowm.OWM('API Here')
+observation = owm.weather_at_place("Belfast,uk")
+w = observation.get_weather()
+wind = w.get_wind()
+temperature = w.get_temperature('celsius');
+temperature = temperature["temp"]
+
 
 # Setting up the GPIO and inputs with pull up
 GPIO.setmode(GPIO.BOARD)
@@ -18,10 +27,10 @@ pygame.mouse.set_visible(False)
 
 # Change colour to preference (R,G,B) 255 max value
 bgcolour       = (0,   0,   0  )
-clockcolour    = (255, 255, 255)
-ind1colour     = (255, 0,   0  )
+clockcolour    = (255, 0, 0)
+ind1colour     = (0, 255,   0  )
 ind2colour     = (255, 255, 0  )
-ind3colour     = (0,   255, 0  )
+ind3colour     = (0,   0, 255  )
 ind4colour     = (0,   255, 255)
 offcolour      = (16,  16,  16 )
 
@@ -40,22 +49,22 @@ xclockpos      = int(bg.get_width()*0.2875)
 ycenter        = int(bg.get_height()/2)
 xtxtpos        = int(bg.get_width()*0.75)
 xindboxpos     = int(xtxtpos-(indboxx/2))
-ind1y          = int((ycenter*0.4)-(indboxy/2))       
+ind1y          = int((ycenter*0.4)-(indboxy/2))
 ind2y          = int((ycenter*0.8)-(indboxy/2))
 ind3y          = int((ycenter*1.2)-(indboxy/2))
 ind4y          = int((ycenter*1.6)-(indboxy/2))
 txthmy         = int(ycenter-digiclockspace)
 txtsecy        = int(ycenter+digiclockspace)
 
-# Fonts  
+# Fonts
 clockfont     = pygame.font.Font(None,digiclocksize)
 indfont       = pygame.font.Font(None,indtxtsize)
 
 # Indicator text - edit text in quotes to desired i.e. "MIC" will show MIC on display
 ind1txt       = indfont.render("MIC",True,bgcolour)
-ind2txt       = indfont.render("PHONE",True,bgcolour)
-ind3txt       = indfont.render("ON AIR",True,bgcolour)
-ind4txt       = indfont.render("DOOR",True,bgcolour)
+ind2txt       = indfont.render("ON AIR",True,bgcolour)
+ind3txt       = indfont.render(str(temperature)+"C",True,bgcolour)
+ind4txt       = indfont.render("0.0.0.0",True,bgcolour)
 
 # Indicator positions
 txtposind1 = ind1txt.get_rect(centerx=xtxtpos,centery=ycenter*0.4)
@@ -128,7 +137,7 @@ while True :
         pygame.draw.rect(bg, ind2colour,(xindboxpos, ind2y, indboxx, indboxy))
 
     if GPIO.input(13):
-        pygame.draw.rect(bg, offcolour,(xindboxpos, ind3y, indboxx, indboxy))
+        pygame.draw.rect(bg, ind3colour,(xindboxpos, ind3y, indboxx, indboxy))
     else:
         pygame.draw.rect(bg, ind3colour,(xindboxpos, ind3y, indboxx, indboxy))
 
@@ -136,7 +145,7 @@ while True :
         pygame.draw.rect(bg, offcolour,(xindboxpos, ind4y, indboxx, indboxy))
     else:
         pygame.draw.rect(bg, ind4colour,(xindboxpos, ind4y, indboxx, indboxy))
-    
+
     # Render the text
     bg.blit(digiclockhm, txtposhm)
     bg.blit(digiclocksec, txtpossec)
@@ -144,7 +153,7 @@ while True :
     bg.blit(ind2txt, txtposind2)
     bg.blit(ind3txt, txtposind3)
     bg.blit(ind4txt, txtposind4)
-    
+
     time.sleep(0.04)
     pygame.time.Clock().tick(25)
     for event in pygame.event.get() :
